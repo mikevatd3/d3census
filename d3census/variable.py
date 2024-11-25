@@ -5,8 +5,6 @@ import ast
 from ast import NodeVisitor, Attribute
 
 from .geography import Geography, FullGeography
-from .edition import Edition
-from .receiving import look_up
 
 
 class GeoVisitor(NodeVisitor):
@@ -32,10 +30,11 @@ def write_variable_shopping_list(function) -> set[str]:
     return visitor.target_variables
 
 
-class CensusifiedFunc:
+class DefinedVariable:
     """
     A censusified function can only take a single Geography variable.
     """
+
     def __init__(self, function):
         shopping_list = write_variable_shopping_list(function)
 
@@ -56,5 +55,4 @@ class CensusifiedFunc:
 
 
 def variable(function):
-    return CensusifiedFunc(function)
-
+    return DefinedVariable(function)

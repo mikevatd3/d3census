@@ -1,48 +1,32 @@
-try:
-    import pandas as pd
-except ImportError:
-    raise ImportError("To use the profile module you must install pandas.")
+import pandas as pd
 
-from .censusify import (
-    CensusifiedFunc,
-    Geography,
-    Edition,
-    join_subshoppinglists,
-    look_up,
-)
+from d3census.edition import ACSEdition
+from d3census.geography import Geography
+from d3census.variable import  DefinedVariable
 
-
-def prep_cens_func(indicator):
-    indicator.__name__ = indicator.__qualname__.replace(".", "")
-    return CensusifiedFunc(indicator)
+from d3census.receiving import build_calls, run_calls, saturate_geography
 
 
 def build_profile(
     geographies: list[Geography],
-    indicators: list[CensusifiedFunc],
-    edition: Edition,
-    suffix: str = "",
-):
-    censusified_funcs = [
-        indicator if isinstance(indicator, CensusifiedFunc) else prep_cens_func(indicator)
-        for indicator in indicators
-    ]
-    
-    shopping_list = {"NAME"} | join_subshoppinglists(censusified_funcs)
-    namespace = look_up(geographies, shopping_list, edition.filled_base_url)
+    variables: list[DefinedVariable],
+    edition: ACSEdition,
+    api_key: str = ""
+) -> pd.DataFrame:
 
-    return pd.DataFrame(
-        [
-            [geo.geoid, geo.name]
-            + [
-                indicator.function(full_geo) 
-                for indicator in censusified_funcs
-            ]
-            for geo, full_geo in namespace.items()
-        ],
-        columns=["geoid", "name"]
-        + [
-            indicator.function.__name__ + suffix 
-            for indicator in censusified_funcs
-        ],
-    )
+    calls = build_calls(geographies, variables, edition, api_key)
+    responses = run_calls(calls)
+    geos = [saturate_geography(response) for response in responses]
+
+    rows = []
+    for geo in geos:
+        rows.append({
+            "geoid": geo.geoid, # type: ignore
+            "name": geo.name, # type: ignore
+            **{
+                variable.function.__name__: variable.function(geo)
+                for variable in variables
+            }
+        })
+    
+    return pd.DataFrame(rows)

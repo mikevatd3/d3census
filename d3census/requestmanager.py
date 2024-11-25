@@ -17,12 +17,8 @@ A request manager that is adapted from real python async io example.
 # Json parse could fail
 
 
-
 async def fetch_data(url: str, session: ClientSession) -> Result[str, str]:
-    response = await session.request(
-        method="GET",
-        url=url
-    )
+    response = await session.request(method="GET", url=url)
 
     try:
         response.raise_for_status()
@@ -30,18 +26,20 @@ async def fetch_data(url: str, session: ClientSession) -> Result[str, str]:
         json = await response.text()
         return Success(json)
 
-    except(
-        aiohttp.ClientError, 
+    except (
+        aiohttp.ClientError,
         aiohttp.http.HttpProcessingError,
         aiohttp.ClientResponseError,
-        ) as e:
+    ) as e:
 
         match e:
             # This needs real error management at this point.
             case aiohttp.ClientError | aiohttp.http.HttpProcessingError:
                 print(f"Failed with error {e} for URL: {url}")
             case aiohttp.ClientResponseError:
-                print(f"Failed with response code {response.status} for URL: {url}")
+                print(
+                    f"Failed with response code {response.status} for URL: {url}"
+                )
 
         return Failure(f"Failed to pull data from {url}, see logs.")
 
@@ -63,9 +61,9 @@ async def workflow(
     while attempts < 3:
         json_response = await fetch_data(task, session)
         match json_response:
-            case Failure(e): # Can we use these messages more effectively?
+            case Failure(e):  # Can we use these messages more effectively?
                 print(e)
-                attempts+=1
+                attempts += 1
                 continue
 
             case Success(response_str):
@@ -74,7 +72,7 @@ async def workflow(
                 match lists:
                     case Failure(e):
                         print(e)
-                        attempts+=1
+                        attempts += 1
                         continue
 
                     case Success(result):
@@ -82,15 +80,13 @@ async def workflow(
 
                     case _:
                         print("something strange going on")
-    
+
     raise HttpProcessingError(message="Ran out of attempts.")
 
 
 async def worker(
-        queries: list[str], 
-        outbox: list[list[Any]],
-        session: ClientSession
-    ):
+    queries: list[str], outbox: list[list[Any]], session: ClientSession
+):
     while queries:
         task = queries.pop()
 
@@ -101,10 +97,7 @@ async def worker(
 async def request_manager(calls: list[str]) -> list[list]:
     outbox = []
     async with ClientSession() as session:
-        tasks = [
-            worker(calls, outbox, session)
-            for _ in range(5)
-        ]
+        tasks = [worker(calls, outbox, session) for _ in range(5)]
         await asyncio.gather(*tasks)
 
     return outbox

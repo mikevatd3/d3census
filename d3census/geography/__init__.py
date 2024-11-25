@@ -1,7 +1,15 @@
+"""
+The geography module (along with reference.py) is how you define the
+geography (or sets of geographies if you're using wildcards). It will
+check that the right components are present to create the geography.
+"""
+
 from dataclasses import dataclass
+from urllib.parse import quote
 from d3census.reference import (
     SumLevel,
     SUMLEV_LABELS,
+    API_GEO_PARAMS,
     GEOID_DECOMPOSER,
     SUMLEV_FROM_PARTS,
     STRING_NAME_TRANSLATION,
@@ -78,7 +86,19 @@ def create_geography(geoid=None, **kwargs):
     return _create_geography_from_parts(**kwargs)
 
 
+def create_api_call_geo_component(geo: Geography):
+    *ins, _for = geo.parts.items()
+    
+    forstr = f"for={quote(API_GEO_PARAMS[_for[0]])}:{_for[1]}"
+
+    if not ins:
+        return f"{forstr}"
+
+    ingeos = "%20".join(f"{quote(API_GEO_PARAMS[key])}:{val}" for key, val in ins)
+    instr = f"in={ingeos}"
+    return f"{forstr}&{instr}"
+
+
 class FullGeography:
-    """
-    This is a leftover from the old library. Trying to avoid a huge rewrite.
-    """
+    pass
+

@@ -49,6 +49,10 @@ STRING_NAME_TRANSLATION = {
     "uni_sch_district": SumLevel.UNI_SCH_DISTRICT,
 }
 
+NAME_STRING_TRANSLATION = {
+    val: key for key, val in STRING_NAME_TRANSLATION.items()
+}
+
 # use the IPUMS sumlev representation to get to the enum
 
 SUMLEV_LABELS = {
@@ -65,6 +69,10 @@ SUMLEV_LABELS = {
     "95000": SumLevel.ELEM_SCH_DISTRICT,
     "96000": SumLevel.SEC_SCH_DISTRICT,
     "97000": SumLevel.UNI_SCH_DISTRICT,
+}
+
+SUMLEV_TO_STEM = {
+    val: key for key, val in SUMLEV_LABELS.items()
 }
 
 # For building the final call to the census API
@@ -85,6 +93,11 @@ API_GEO_PARAMS = {
     SumLevel.UNI_SCH_DISTRICT: "school district (unified)",
 }
 
+GEO_TO_API_PARAMS = {val: key for key, val in API_GEO_PARAMS.items()}
+
+API_STR_TO_VAR_STR = {
+    key: NAME_STRING_TRANSLATION[val] for key, val in GEO_TO_API_PARAMS.items()
+}
 
 # This shows which part consumes how many digits on a geoid
 
@@ -125,11 +138,36 @@ GEOID_DECOMPOSER = {
     },
 }
 
-
 # If you only know which parts are present, this gets you back to
 # which geoid is being built.
 
 SUMLEV_FROM_PARTS = {
     tuple(sorted(parts.keys(), key=lambda lev: lev.value)): lev
     for lev, parts in GEOID_DECOMPOSER.items()
+}
+
+
+class ACSEra(Enum):
+    ONE_YEAR = auto()
+    THREE_YEAR = auto()
+    FIVE_YEAR = auto()
+
+
+# Maps era identifiers to ACSEra values
+ERA_MAPPINGS = {
+    "acs1": ACSEra.ONE_YEAR,
+    "acs3": ACSEra.THREE_YEAR,
+    "acs5": ACSEra.FIVE_YEAR,
+}
+
+ERA_STR_TRANSLATION = {val: key for key, val in ERA_MAPPINGS.items()}
+
+
+# Valid years for each ACSEra type
+VALID_YEARS_BY_ERA = {
+    ACSEra.ONE_YEAR: range(2005, 2024),  # Example range for 1-year data
+    ACSEra.THREE_YEAR: range(
+        2005, 2014
+    ),  # 3-year data was discontinued in 2014
+    ACSEra.FIVE_YEAR: range(2009, 2023),  # Example range for 5-year data
 }
