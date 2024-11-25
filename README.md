@@ -133,7 +133,7 @@ for year in range(2015, 2023): # Remember to add 1 to final year!
             pct_under_five_below_poverty,
             num_children_under_five,
         ],
-        create_edition("acs1", year) # Use the 1-year to avoid overlapping compaison issues!
+        create_edition("acs1", year) # Use the 1-year to avoid overlapping survey periods
     )
     
     profile = (
