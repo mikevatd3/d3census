@@ -1,4 +1,4 @@
-# D3 Census
+# d3census
 
 A Python library for building custom variables from any year, geography, or data point from the American Community Survey.
 
