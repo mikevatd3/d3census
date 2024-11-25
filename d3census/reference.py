@@ -15,7 +15,8 @@ class SumLevel(Enum):
     and the final call out to the census api where you have to use
     their (surprisingly complicated) strings.
     """
-
+    
+    NATION = auto()
     STATE = auto()
     CONGRESSIONAL_DISTRICT = auto()
     STATE_LEG_LOWER = auto()
@@ -34,6 +35,7 @@ class SumLevel(Enum):
 # translate the 'part' to the enum
 
 STRING_NAME_TRANSLATION = {
+    "nation": SumLevel.NATION,
     "state": SumLevel.STATE,
     "congressional_district": SumLevel.CONGRESSIONAL_DISTRICT,
     "state_leg_lower": SumLevel.STATE_LEG_LOWER,
@@ -56,6 +58,7 @@ NAME_STRING_TRANSLATION = {
 # use the IPUMS sumlev representation to get to the enum
 
 SUMLEV_LABELS = {
+    "01000": SumLevel.NATION,
     "04000": SumLevel.STATE,
     "50000": SumLevel.CONGRESSIONAL_DISTRICT,
     "05000": SumLevel.COUNTY,
@@ -78,6 +81,7 @@ SUMLEV_TO_STEM = {
 # For building the final call to the census API
 
 API_GEO_PARAMS = {
+    SumLevel.NATION: "us",
     SumLevel.STATE: "state",
     SumLevel.CONGRESSIONAL_DISTRICT: "congressional district",
     SumLevel.COUNTY: "county",
@@ -102,6 +106,7 @@ API_STR_TO_VAR_STR = {
 # This shows which part consumes how many digits on a geoid
 
 GEOID_DECOMPOSER = {
+    SumLevel.NATION: {SumLevel.NATION: 0},
     SumLevel.STATE: {SumLevel.STATE: 2},
     SumLevel.COUNTY: {SumLevel.STATE: 2, SumLevel.COUNTY: 3},
     SumLevel.CONGRESSIONAL_DISTRICT: {

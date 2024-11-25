@@ -89,7 +89,7 @@ def create_geography(geoid=None, **kwargs):
 def create_api_call_geo_component(geo: Geography):
     *ins, _for = geo.parts.items()
     
-    forstr = f"for={quote(API_GEO_PARAMS[_for[0]])}:{_for[1]}"
+    forstr = f"for={quote(API_GEO_PARAMS[_for[0]])}:{_for[1] if _for[1] else '1'}"
 
     if not ins:
         return f"{forstr}"

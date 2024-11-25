@@ -30,3 +30,4 @@ def build_profile(
         })
     
     return pd.DataFrame(rows)
+

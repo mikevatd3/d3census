@@ -44,8 +44,6 @@ def build_calls(
 
 
 def safeish_float_cast(value: Any) -> str | float:
-    if type(value) == str:
-        return value
     try:
         return float(value)
     except (ValueError, TypeError):
@@ -95,12 +93,15 @@ def run_calls(calls):
         dicts.extend(
             [
                 {"geoid": build_geoid(row, sumlevel)}
+                | {"name": row["NAME"]}
                 | {
-                    (key if key != "NAME" else "name"): safeish_float_cast(
-                        val
-                    )  # Need to cast this to a float or something
+                    key: safeish_float_cast(val)  # Need to cast this to a float or something
                     for key, val in row.items()
-                    if not isinstance(key, SumLevel)
+                    if (
+                        (not isinstance(key, SumLevel))
+                        and (key != "NAME")
+                    )
+
                 }
                 for row in labeled
             ]
