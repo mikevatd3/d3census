@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from urllib.parse import quote
 from d3census.reference import (
     SumLevel,
+    UCG,
     SUMLEV_LABELS,
     API_GEO_PARAMS,
     GEOID_DECOMPOSER,
@@ -22,17 +23,26 @@ from .tablereference import BaseGeography
 class Geography(BaseGeography):
     sum_level: SumLevel
     parts: dict
+    ucgid: bool = False
 
 
-def _create_geography_from_fullgeoid(geoid):
+def _create_geography_from_ucid(ucgid):
+    *sum_level, _ = ucgid.split("US")
+    sum_level = sum_level[0][:3] + "00"
+    level = SUMLEV_LABELS[sum_level]
+
+    return Geography(level, {UCG.ID: ucgid}, ucgid=True)
+
+
+def _create_geography_from_ipums(geoid):
     level_code, geoid = geoid.split("US")
     sum_level = SUMLEV_LABELS[level_code]
     composition = GEOID_DECOMPOSER[sum_level]
-    
+
     parts = {}
     position = 0
     for lev, end in composition.items():
-        parts[lev] = geoid[position: position + end]
+        parts[lev] = geoid[position : position + end]
         position += end
 
     return Geography(
@@ -47,10 +57,12 @@ def _create_geography_from_parts(**kwargs):
             STRING_NAME_TRANSLATION[part_name]: str(part_val)
             for part_name, part_val in kwargs.items()
         }
-    
+
         return Geography(
-            sum_level=SUMLEV_FROM_PARTS[tuple(sorted(parts.keys(), key=lambda lev: lev.value))],
-            parts = parts
+            sum_level=SUMLEV_FROM_PARTS[
+                tuple(sorted(parts.keys(), key=lambda lev: lev.value))
+            ],
+            parts=parts,
         )
 
     except KeyError:
@@ -63,15 +75,15 @@ def _create_geography_from_parts(**kwargs):
         )
 
 
-def create_geography(geoid=None, **kwargs):
-    if geoid and kwargs:
+def create_geography(geoid=None, ucgid=None, **kwargs):
+    if (geoid and kwargs) or (geoid and ucgid) or (ucgid and kwargs):
         raise ValueError(
-            "You can only provide a geoid or individual components, not both."
+            "You can only provide a geoid, ucgid, or individual components, not multiple."
         )
 
-    if not (geoid or kwargs):
+    if not (geoid or kwargs or ucgid):
         raise ValueError(
-            "You have to provide either a full geoid or individual geography components."
+            "You have to provide either a full geoid, ucgid, or individual geography components."
         )
 
     if geoid:
@@ -81,24 +93,40 @@ def create_geography(geoid=None, **kwargs):
             raise ValueError(
                 "'create_geography' only accepts full geoids eg. 05000US26163."
             )
-        return _create_geography_from_fullgeoid(geoid)
+        return _create_geography_from_ipums(geoid)
+
+    if ucgid:
+        *sum_level, _ = ucgid.split("US")
+
+        if not sum_level:
+            raise ValueError(
+                "'create_geography' only accepts full ucgids eg. 0500000US26163."
+            )
+        return _create_geography_from_ucid(ucgid)
 
     return _create_geography_from_parts(**kwargs)
 
 
 def create_api_call_geo_component(geo: Geography):
     *ins, _for = geo.parts.items()
-    
-    forstr = f"for={quote(API_GEO_PARAMS[_for[0]])}:{_for[1] if _for[1] else '1'}"
+
+    if geo.ucgid == True:
+        return f"ucgid={_for[1]}"
+
+    forstr = (
+        f"for={quote(API_GEO_PARAMS[_for[0]])}:{_for[1] if _for[1] else '1'}"
+    )
 
     if not ins:
         return f"{forstr}"
 
-    ingeos = "%20".join(f"{quote(API_GEO_PARAMS[key])}:{val}" for key, val in ins)
+    ingeos = "%20".join(
+        f"{quote(API_GEO_PARAMS[key])}:{val}" for key, val in ins
+    )
     instr = f"in={ingeos}"
+
     return f"{forstr}&{instr}"
 
 
 class FullGeography:
     pass
-

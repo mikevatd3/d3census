@@ -1,6 +1,6 @@
 import pytest
 from d3census import create_geography, Geography
-from d3census.reference import SumLevel
+from d3census.reference import UCG, SumLevel
 
 
 def test_diff_method_same_result():
@@ -56,12 +56,12 @@ def test_create_geography_parts_place():
 
 # Test: Mixed Inputs (Geoid and Parts)
 def test_create_geography_mixed_inputs():
-    with pytest.raises(ValueError, match="You can only provide a geoid or individual components, not both."):
+    with pytest.raises(ValueError, match="You can only provide a geoid, ucgid, or individual components, not multiple."):
         create_geography(geoid="04000US26", state="26")
 
 # Test: Missing Both Geoid and Parts
 def test_create_geography_missing_inputs():
-    with pytest.raises(ValueError, match="You have to provide either a full geoid or individual geography components."):
+    with pytest.raises(ValueError, match="You have to provide either a full geoid, ucgid, or individual geography components."):
         create_geography()
 
 # Test: Invalid Geoid Format
@@ -171,5 +171,15 @@ def test_create_geography_parts_sec_school_district():
     expected = Geography(
         sum_level=SumLevel.SEC_SCH_DISTRICT,
         parts={SumLevel.STATE: "12", SumLevel.SEC_SCH_DISTRICT: "345"}
+    )
+    assert result == expected
+
+# Test: Valid Components for Secondary School District
+def test_create_geography_parts_ucgid():
+    result = create_geography(ucgid="860Z200US15007")
+    expected = Geography(
+        sum_level=SumLevel.ZCTA,
+        parts={UCG.ID: "860Z200US15007"},
+        ucgid=True
     )
     assert result == expected

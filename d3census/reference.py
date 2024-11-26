@@ -7,6 +7,15 @@ to get from one representation to another for summary levels.
 from enum import Enum, auto
 
 
+class UCG(Enum):
+    """
+    This is a one member enum to mark that the geoid part is all
+    that is needed to define the item.
+    """
+    ID = auto()
+
+
+
 class SumLevel(Enum):
     """
     SumLevel is the default way to ID which geo type is in play
@@ -15,7 +24,7 @@ class SumLevel(Enum):
     and the final call out to the census api where you have to use
     their (surprisingly complicated) strings.
     """
-    
+
     NATION = auto()
     STATE = auto()
     CONGRESSIONAL_DISTRICT = auto()
@@ -74,9 +83,7 @@ SUMLEV_LABELS = {
     "97000": SumLevel.UNI_SCH_DISTRICT,
 }
 
-SUMLEV_TO_STEM = {
-    val: key for key, val in SUMLEV_LABELS.items()
-}
+SUMLEV_TO_STEM = {val: key for key, val in SUMLEV_LABELS.items()}
 
 # For building the final call to the census API
 

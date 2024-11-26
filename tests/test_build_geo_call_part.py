@@ -1,5 +1,5 @@
 import pytest
-from d3census.reference import SumLevel
+from d3census.reference import UCG, SumLevel
 from d3census.geography import Geography, create_api_call_geo_component
 
 
@@ -42,6 +42,14 @@ from d3census.geography import Geography, create_api_call_geo_component
                 },
             ),
             "for=tract:000500&in=state:26%20county:163",
+        ),
+        (
+            Geography(
+                sum_level=SumLevel.ZCTA,
+                parts={UCG.ID: "860Z200US15007"},
+                ucgid=True
+            ),
+            "ucgid=860Z200US15007",
         ),
     ],
 )
