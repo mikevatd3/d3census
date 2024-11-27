@@ -3,12 +3,14 @@ The geography module (along with reference.py) is how you define the
 geography (or sets of geographies if you're using wildcards). It will
 check that the right components are present to create the geography.
 """
-
+from collections import defaultdict
 from dataclasses import dataclass
 from urllib.parse import quote
+
 from d3census.reference import (
     SumLevel,
     UCG,
+    Individual,
     SUMLEV_LABELS,
     API_GEO_PARAMS,
     GEOID_DECOMPOSER,
@@ -24,6 +26,29 @@ class Geography(BaseGeography):
     sum_level: SumLevel
     parts: dict
     ucgid: bool = False
+
+    @property
+    def parents(self) -> frozenset[tuple[SumLevel, str]] | SumLevel:
+        """
+        Parents returns tuples of parent sum_levels and their integer
+        values (as strings).
+        """
+        key = frozenset(
+            {
+                (key, val)
+                for key, val in self.parts.items()
+                if key != self.sum_level
+            }
+        )
+
+        if not key:
+            return self.sum_level
+
+        return key
+
+    @property
+    def identity(self):
+        return self.parts[self.sum_level]
 
 
 def _create_geography_from_ucid(ucgid):
@@ -59,9 +84,7 @@ def _create_geography_from_parts(**kwargs):
         }
 
         return Geography(
-            sum_level=SUMLEV_FROM_PARTS[
-                tuple(sorted(parts.keys(), key=lambda lev: lev.value))
-            ],
+            sum_level=SUMLEV_FROM_PARTS[frozenset(parts.keys())],
             parts=parts,
         )
 
@@ -107,25 +130,75 @@ def create_geography(geoid=None, ucgid=None, **kwargs):
     return _create_geography_from_parts(**kwargs)
 
 
+@dataclass
+class CallTree:
+    groups: defaultdict
+
+
+def consolidate_calls(geos: list[Geography]) -> CallTree:
+    """
+    This takes a list of geographies and organizes them by their parent
+    geographies.
+    """
+
+    groups = defaultdict(list)
+
+    for geo in geos:
+        groups[geo.parents].append(geo)
+
+    return CallTree(groups)
+
+
+def create_consolodated_api_calls(tree: CallTree):
+    """
+    This takes the CallTree created by 'consolidate_calls' and returns
+    a list of the geography portion of the api calls.
+    """
+
+    calls = []
+    for parents, children in tree.groups.items():
+        child_str = ",".join([child.identity for child in children])
+
+        match parents:
+            case SumLevel():
+                calls.append(f"for={quote(API_GEO_PARAMS[parents])}:{child_str}")
+
+            case frozenset():
+                child_str = ",".join([child.identity for child in children])
+                ingeos = "%20".join(
+                    f"{quote(API_GEO_PARAMS[key])}:{val}" for key, val in parents
+                )
+
+                sumlevel = children[0].sum_level
+
+                for_str = f"for={quote(API_GEO_PARAMS[sumlevel])}:{child_str}"
+                in_str = f"in={ingeos}"
+
+                calls.append(f"{for_str}&{in_str}")
+
+            case _:
+                raise TypeError(f"{type(parents)} isn't a valid parent type.")
+
+    return calls
+
+
 def create_api_call_geo_component(geo: Geography):
-    *ins, _for = geo.parts.items()
+    *ins, _for = sorted(geo.parts.items(), key=lambda item: item[0].value)
 
     if geo.ucgid == True:
         return f"ucgid={_for[1]}"
 
-    forstr = (
-        f"for={quote(API_GEO_PARAMS[_for[0]])}:{_for[1] if _for[1] else '1'}"
-    )
+    for_str = f"for={quote(API_GEO_PARAMS[_for[0]])}:{_for[1] if _for[1] else '1'}"
 
     if not ins:
-        return f"{forstr}"
+        return f"{for_str}"
 
     ingeos = "%20".join(
         f"{quote(API_GEO_PARAMS[key])}:{val}" for key, val in ins
     )
-    instr = f"in={ingeos}"
+    in_str = f"in={ingeos}"
 
-    return f"{forstr}&{instr}"
+    return f"{for_str}&{in_str}"
 
 
 class FullGeography:

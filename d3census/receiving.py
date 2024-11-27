@@ -3,6 +3,8 @@ import asyncio
 
 from d3census.variable import DefinedVariable
 from d3census.geography import (
+    consolidate_calls,
+    create_consolodated_api_calls,
     FullGeography,
     Geography,
     create_api_call_geo_component,
@@ -26,7 +28,6 @@ def build_calls(
     edition: ACSEdition,
     api_key: str = "",
 ) -> list[str]:
-
     shopping_list = set()
     for variable in variables:
         shopping_list.update(variable.shopping_list)
@@ -35,11 +36,12 @@ def build_calls(
     var_string = "NAME," + ",".join(shopping_list)
     key_string = f"&key={api_key}" if api_key else ""
 
+    call_tree = consolidate_calls(geographies)
+    geo_components = create_consolodated_api_calls(call_tree)
+    
     return [
-        f"{base_url}?"
-        f"get={var_string}"
-        f"&{create_api_call_geo_component(geo)}" + key_string
-        for geo in geographies
+        f"{base_url}?" f"get={var_string}" f"&{geo_component}" + key_string
+        for geo_component in geo_components
     ]
 
 
@@ -53,6 +55,9 @@ def safeish_float_cast(value: Any) -> str | float:
 def build_geoid(row: dict, sumlevel: SumLevel):
     stem = SUMLEV_TO_STEM[sumlevel]
     parts = GEOID_DECOMPOSER[sumlevel].keys()
+    
+    if sumlevel == SumLevel.ZCTA:
+        parts = {part for part in parts if part != SumLevel.STATE}
 
     return stem + "".join(row[part] for part in parts)
 
@@ -69,15 +74,12 @@ def run_calls(calls):
     for msg in responses:
         header, *rows = msg
 
-        sumlev_key = tuple(
-            sorted(
-                (
-                    GEO_TO_API_PARAMS[col]
-                    for col in header
-                    if col in GEO_TO_API_PARAMS
-                ),
-                key=lambda lev: lev.value,
-            )
+        sumlev_key = frozenset(
+            {
+                GEO_TO_API_PARAMS[col]
+                for col in header
+                if col in GEO_TO_API_PARAMS
+            }
         )
         sumlevel = SUMLEV_FROM_PARTS[sumlev_key]
 
@@ -95,13 +97,11 @@ def run_calls(calls):
                 {"geoid": build_geoid(row, sumlevel)}
                 | {"name": row["NAME"]}
                 | {
-                    key: safeish_float_cast(val)  # Need to cast this to a float or something
+                    key: safeish_float_cast(
+                        val
+                    )  # Need to cast this to a float or something
                     for key, val in row.items()
-                    if (
-                        (not isinstance(key, SumLevel))
-                        and (key != "NAME")
-                    )
-
+                    if ((not isinstance(key, SumLevel)) and (key != "NAME"))
                 }
                 for row in labeled
             ]

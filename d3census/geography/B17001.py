@@ -678,7 +678,7 @@ class B17001:
         raise NotImplementedError()
     
     @property
-    def _004E(self):
+    def _004E(self) -> float:
         """
         POVERTY STATUS IN THE PAST 12 MONTHS BY SEX BY AGE
         universe: Estimate

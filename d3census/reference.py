@@ -7,15 +7,6 @@ to get from one representation to another for summary levels.
 from enum import Enum, auto
 
 
-class UCG(Enum):
-    """
-    This is a one member enum to mark that the geoid part is all
-    that is needed to define the item.
-    """
-    ID = auto()
-
-
-
 class SumLevel(Enum):
     """
     SumLevel is the default way to ID which geo type is in play
@@ -39,6 +30,24 @@ class SumLevel(Enum):
     ELEM_SCH_DISTRICT = auto()
     SEC_SCH_DISTRICT = auto()
     UNI_SCH_DISTRICT = auto()
+
+
+class UCG(Enum):
+    """
+    This is a one member enum to mark that the geoid part is all that is
+    needed to define the item.
+    """
+
+    ID = auto()
+
+
+class Individual(Enum):
+    """
+    This is a one member enum to mark when a geoid doesn't have parents
+    to nest under.
+    """
+
+    ALONE = auto()
 
 
 # translate the 'part' to the enum
@@ -154,9 +163,10 @@ GEOID_DECOMPOSER = {
 # which geoid is being built.
 
 SUMLEV_FROM_PARTS = {
-    tuple(sorted(parts.keys(), key=lambda lev: lev.value)): lev
-    for lev, parts in GEOID_DECOMPOSER.items()
-    } | {(SumLevel.ZCTA,): SumLevel.ZCTA} # Handling the post-2020 case
+    frozenset(parts.keys()): lev for lev, parts in GEOID_DECOMPOSER.items()
+} | {
+    frozenset([SumLevel.ZCTA]): SumLevel.ZCTA
+}  # Handling the post-2020 case
 
 
 class ACSEra(Enum):
