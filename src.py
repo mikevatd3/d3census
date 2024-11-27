@@ -45,30 +45,16 @@ def pct_under_five_below_poverty(geo: Geography):
 
 join_columns = ["geoid", "name"]
 
-years = []
-for year in range(2015, 2023): # Remember to add 1 to final year!
-    profile = build_profile(
-        [
-            create_geography(geoid="01000US"), # US overall
-            # create_geography(nation="1"), # Another way to show US overall
-            create_geography(geoid="04000US26"),
-            create_geography(state="26", county="163", tract="*")
-        ],
-        [
-            pct_under_five_below_poverty,
-            num_children_under_five,
-        ],
-        create_edition("acs5", 2016)
-    )
-    
-    profile = (
-        profile.set_index(join_columns)
-        .rename(columns={col: f"{col}_{year}" for col in profile.columns})
-    )
+profile = build_profile(
+    [
+        create_geography(state="26", zcta="48202")
+    ],
+    [
+        pct_under_five_below_poverty,
+        num_children_under_five,
+    ],
+    create_edition("acs5", 2012)
+)
 
-    years.append(profile)
-
-result = pd.concat(years, axis=1)
-
-result.to_csv("test_overtime_profile.csv")
+print(profile)
 

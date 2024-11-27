@@ -51,6 +51,13 @@ from d3census.geography import Geography, create_api_call_geo_component
             ),
             "ucgid=860Z200US15007",
         ),
+        (
+            Geography(
+                sum_level=SumLevel.ZCTA,
+                parts={SumLevel.STATE: "26", SumLevel.ZCTA: "48202"},
+            ),
+            "for=zip%20code%20tabulation%20area:48202&in=state:26",
+        ),
     ],
 )
 def test_geography_to_api_string(geography, expected_string):

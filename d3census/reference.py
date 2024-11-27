@@ -92,7 +92,7 @@ API_GEO_PARAMS = {
     SumLevel.STATE: "state",
     SumLevel.CONGRESSIONAL_DISTRICT: "congressional district",
     SumLevel.COUNTY: "county",
-    SumLevel.ZCTA: "zcta",
+    SumLevel.ZCTA: "zip code tabulation area",
     SumLevel.STATE_LEG_LOWER: "state legislative district (upper chamber)",
     SumLevel.STATE_LEG_UPPER: "state legislative district (lower chamber)",
     SumLevel.COUNTY_SUBDIVISION: "county subdivision",
@@ -120,7 +120,7 @@ GEOID_DECOMPOSER = {
         SumLevel.STATE: 2,
         SumLevel.CONGRESSIONAL_DISTRICT: 2,
     },
-    SumLevel.ZCTA: {SumLevel.ZCTA: 5},
+    SumLevel.ZCTA: {SumLevel.STATE: 0, SumLevel.ZCTA: 5},
     SumLevel.STATE_LEG_LOWER: {SumLevel.STATE: 2, SumLevel.STATE_LEG_LOWER: 3},
     SumLevel.STATE_LEG_UPPER: {SumLevel.STATE: 2, SumLevel.STATE_LEG_UPPER: 3},
     SumLevel.COUNTY_SUBDIVISION: {
