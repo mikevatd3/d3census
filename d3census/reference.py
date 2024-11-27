@@ -156,7 +156,7 @@ GEOID_DECOMPOSER = {
 SUMLEV_FROM_PARTS = {
     tuple(sorted(parts.keys(), key=lambda lev: lev.value)): lev
     for lev, parts in GEOID_DECOMPOSER.items()
-}
+    } | {(SumLevel.ZCTA,): SumLevel.ZCTA} # Handling the post-2020 case
 
 
 class ACSEra(Enum):

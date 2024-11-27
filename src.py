@@ -47,13 +47,13 @@ join_columns = ["geoid", "name"]
 
 profile = build_profile(
     [
-        create_geography(state="26", zcta="48202")
+        create_geography(zcta="48202")
     ],
     [
         pct_under_five_below_poverty,
         num_children_under_five,
     ],
-    create_edition("acs5", 2012)
+    create_edition("acs5", 2021)
 )
 
 print(profile)
