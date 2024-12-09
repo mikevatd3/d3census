@@ -209,6 +209,26 @@ def test_create_geography_full_geoid_sec_school_district():
     assert result == expected
 
 
+# Test: Valid Full Geoid for Nation
+def test_create_geography_nation():
+    result = create_geography(nation="1")
+    expected = Geography(
+        sum_level=SumLevel.NATION,
+        parts={SumLevel.NATION: "1"},
+    )
+    assert result == expected
+
+
+# Test: Valid Full Geoid for Nation GEOID
+def test_create_geography_nation_geoid():
+    result = create_geography(geoid="01000US")
+    expected = Geography(
+        sum_level=SumLevel.NATION,
+        parts={SumLevel.NATION: "1"},
+    )
+    assert result == expected
+
+
 # Test: Valid Components for Secondary School District
 def test_create_geography_parts_sec_school_district():
     result = create_geography(state="12", sec_sch_district="345")

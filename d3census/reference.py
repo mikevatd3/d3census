@@ -41,15 +41,6 @@ class UCG(Enum):
     ID = auto()
 
 
-class Individual(Enum):
-    """
-    This is a one member enum to mark when a geoid doesn't have parents
-    to nest under.
-    """
-
-    ALONE = auto()
-
-
 # translate the 'part' to the enum
 
 STRING_NAME_TRANSLATION = {
@@ -168,6 +159,9 @@ SUMLEV_FROM_PARTS = {
     frozenset([SumLevel.ZCTA]): SumLevel.ZCTA
 }  # Handling the post-2020 case
 
+# Nation has to be handeled separately
+SUMLEV_FROM_PARTS[frozenset({SumLevel.NATION})] = SumLevel.NATION
+
 
 class ACSEra(Enum):
     ONE_YEAR = auto()
@@ -191,5 +185,5 @@ VALID_YEARS_BY_ERA = {
     ACSEra.THREE_YEAR: range(
         2005, 2014
     ),  # 3-year data was discontinued in 2014
-    ACSEra.FIVE_YEAR: range(2009, 2023),  # Example range for 5-year data
+    ACSEra.FIVE_YEAR: range(2009, 2024),  # Example range for 5-year data
 }

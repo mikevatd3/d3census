@@ -10,7 +10,6 @@ from urllib.parse import quote
 from d3census.reference import (
     SumLevel,
     UCG,
-    Individual,
     SUMLEV_LABELS,
     API_GEO_PARAMS,
     GEOID_DECOMPOSER,
@@ -62,12 +61,20 @@ def _create_geography_from_ucid(ucgid):
 def _create_geography_from_ipums(geoid):
     level_code, geoid = geoid.split("US")
     sum_level = SUMLEV_LABELS[level_code]
+
+    
+    if sum_level == SumLevel.NATION:
+        return Geography(
+            sum_level=SumLevel.NATION,
+            parts={SumLevel.NATION: "1"},
+        )
+
     composition = GEOID_DECOMPOSER[sum_level]
 
     parts = {}
     position = 0
     for lev, end in composition.items():
-        parts[lev] = geoid[position : position + end]
+        parts[lev] =geoid[position : position + end]
         position += end
 
     return Geography(
@@ -77,6 +84,11 @@ def _create_geography_from_ipums(geoid):
 
 
 def _create_geography_from_parts(**kwargs):
+    if "nation" in kwargs:
+        return Geography(
+            sum_level=SumLevel.NATION,
+            parts={SumLevel.NATION: "1"},
+        )
     try:
         parts = {
             STRING_NAME_TRANSLATION[part_name]: str(part_val)
