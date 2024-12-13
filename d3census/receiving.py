@@ -59,7 +59,7 @@ def build_geoid(row: dict, sumlevel: SumLevel):
     if sumlevel == SumLevel.ZCTA:
         parts = {part for part in parts if part != SumLevel.STATE}
 
-    return stem + "".join(row[part] for part in parts)
+    return stem + "US" + "".join(row[part] for part in parts)
 
 
 def run_calls(calls):
@@ -95,7 +95,7 @@ def run_calls(calls):
         dicts.extend(
             [
                 {"geoid": build_geoid(row, sumlevel)}
-                | {"name": row["NAME"]}
+                | {"name": row["NAME"].replace(";", ",")}
                 | {
                     key: safeish_float_cast(
                         val
