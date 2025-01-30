@@ -2,6 +2,10 @@
 
 A Python library for building custom variables from any year, geography, or data point from the American Community Survey.
 
+## Installing from git
+```bash
+pip install git+https://github.com/mikevatd3/d3census.git
+```
 
 ## Basic Profile Creation
 
