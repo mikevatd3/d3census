@@ -156,7 +156,7 @@ def consolidate_calls(geos: list[Geography]) -> CallTree:
     groups = defaultdict(list)
 
     for geo in geos:
-        groups[geo.parents].append(geo)
+        groups[(geo.sum_level, geo.parents)].append(geo)
 
     return CallTree(groups)
 
@@ -168,7 +168,9 @@ def create_consolodated_api_calls(tree: CallTree):
     """
 
     calls = []
-    for parents, children in tree.groups.items():
+    # You don't need the sumlevel, you just need separate line items in 
+    # the defaultdict in the CallTree
+    for (_, parents), children in tree.groups.items():
         child_str = ",".join([child.identity for child in children])
 
         match parents:

@@ -44,7 +44,7 @@ def build_calls(
 
     # chunk out var string to 50 vars
     
-    template = "{base_url}?get=NAME,{vars_str}&{geo_part}&{key_string}"
+    template = "{base_url}?get=NAME,{vars_str}&{geo_part}{key_string}"
 
     return [
         template.format(
