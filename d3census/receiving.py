@@ -1,4 +1,5 @@
 from typing import Any
+from itertools import product
 import asyncio
 
 from d3census.variable import DefinedVariable
@@ -7,7 +8,6 @@ from d3census.geography import (
     create_consolodated_api_calls,
     FullGeography,
     Geography,
-    create_api_call_geo_component,
 )
 from d3census.edition import ACSEdition
 from d3census.requestmanager import request_manager
@@ -33,15 +33,27 @@ def build_calls(
         shopping_list.update(variable.shopping_list)
 
     base_url = f"https://api.census.gov/data/{edition.year}/acs/{ERA_STR_TRANSLATION[edition.era]}"
-    var_string = "NAME," + ",".join(shopping_list)
     key_string = f"&key={api_key}" if api_key else ""
 
     call_tree = consolidate_calls(geographies)
-    geo_components = create_consolodated_api_calls(call_tree)
+    geo_parts = create_consolodated_api_calls(call_tree)
     
+    def chunk(lst, n):
+        for i in range(0, len(lst), n):
+            yield lst[i:i+n]
+
+    # chunk out var string to 50 vars
+    
+    template = "{base_url}?get=NAME,{vars_str}&{geo_part}&{key_string}"
+
     return [
-        f"{base_url}?" f"get={var_string}" f"&{geo_component}" + key_string
-        for geo_component in geo_components
+        template.format(
+            base_url=base_url,
+            vars_str=vars_str,
+            geo_part=geo_part,
+            key_string=key_string,
+        )
+        for geo_part, vars_str in product(geo_parts, chunk(variables, 50))
     ]
 
 
