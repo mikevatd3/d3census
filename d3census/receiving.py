@@ -49,11 +49,11 @@ def build_calls(
     return [
         template.format(
             base_url=base_url,
-            vars_str=vars_str,
+            vars_str=",".join(vars_str),
             geo_part=geo_part,
             key_string=key_string,
         )
-        for geo_part, vars_str in product(geo_parts, chunk(variables, 50))
+        for geo_part, vars_str in product(geo_parts, chunk(shopping_list, 50))
     ]
 
 

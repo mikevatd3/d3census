@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "d3census"
-version = "1.1.1"
+version = "1.1.2"
 description = "A python library for interacting with the Census API -- similar to tidycensus."
 authors = ["mikevatd3 <mikevatd3@github.com>"]
 license = "MIT"
