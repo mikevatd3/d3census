@@ -1,3 +1,4 @@
+from collections import defaultdict
 import pandas as pd
 
 from d3census.edition import ACSEdition
@@ -35,7 +36,12 @@ def build_profile(
 
     calls = build_calls(geographies, variables, edition, api_key)
     responses = run_calls(calls)
-    geos = [saturate_geography(response) for response in responses]
+
+    geo_dicts = defaultdict(dict)
+    for response in responses:
+        geo_dicts[response["geoid"]].update(response)
+
+    geos = [saturate_geography(response) for response in geo_dicts]
 
     rows = []
     for geo in geos:
