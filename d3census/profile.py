@@ -38,10 +38,12 @@ def build_profile(
     responses = run_calls(calls)
 
     geo_dicts = defaultdict(dict)
+
     for response in responses:
         geo_dicts[response["geoid"]].update(response)
+    
 
-    geos = [saturate_geography(response) for response in geo_dicts]
+    geos = [saturate_geography(response) for response in geo_dicts.values()]
 
     rows = []
     for geo in geos:
