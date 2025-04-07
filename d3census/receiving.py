@@ -53,7 +53,7 @@ def build_calls(
             geo_part=geo_part,
             key_string=key_string,
         )
-        for geo_part, vars_str in product(geo_parts, chunk(list(shopping_list), 50))
+        for geo_part, vars_str in product(geo_parts, chunk(list(shopping_list), 25))
     ]
 
 
