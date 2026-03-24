@@ -181,11 +181,11 @@ ERA_STR_TRANSLATION = {val: key for key, val in ERA_MAPPINGS.items()}
 
 # Valid years for each ACSEra type
 VALID_YEARS_BY_ERA = {
-    ACSEra.ONE_YEAR: range(2005, 2024),  # Example range for 1-year data
+    ACSEra.ONE_YEAR: range(2005, 2025),  # Example range for 1-year data
     ACSEra.THREE_YEAR: range(
         2005, 2014
     ),  # 3-year data was discontinued in 2014
-    ACSEra.FIVE_YEAR: range(2009, 2024),  # Example range for 5-year data
+    ACSEra.FIVE_YEAR: range(2009, 2025),  # Example range for 5-year data
 }
 
 
